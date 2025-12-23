@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sqiirt</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --card-bg: rgba(20, 20, 20, 0.9);
+            --text: #e0e0e0;
+            --dim: #777;
+            --accent: #ff3333;
+            --border: #333;
+            --font: 'Courier New', Courier, monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: radial-gradient(circle at top, #111 0%, #000 100%);
+            overflow-x: hidden;
+        }
+
+        /* === CRT ЭФФЕКТ === */
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 9999;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 50, 50, 0.04) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            background-size: 100% 4px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            animation: scanline 10s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { top: -100px; }
+            100% { top: 100%; }
+        }
+
+        /* === ИНТРО === */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease;
+        }
+
+        .intro-box {
+            text-align: center;
+            border: 1px solid var(--accent);
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(255, 51, 51, 0.2);
+        }
+
+        .intro-title {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: var(--text);
+            letter-spacing: 2px;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: 1px solid var(--dim);
+            color: var(--text);
+            padding: 10px 30px;
+            margin: 0 10px;
+            cursor: pointer;
+            font-family: var(--font);
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .lang-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        /* === ЛОГИКА СМЕНЫ ЯЗЫКА === */
+        .lang-ru, .lang-en { display: none; }
+        body.show-ru .lang-ru { display: inline; }
+        body.show-en .lang-en { display: inline; }
+
+        /* === ОСНОВНОЙ КОНТЕНТ === */
+        .wrapper {
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            justify-content: center;
+            align-items: flex-start;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s ease;
+            margin-bottom: 60px; /* Отступ для плеера */
+        }
+
+        .content-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 0; 
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            flex: 1 1 300px; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.9);
+        }
+
+        /* === ГЛИТЧ === */
+        .glitch-name {
+            font-size: 28px;
+            text-transform: lowercase;
+            margin-bottom: 5px;
+            position: relative;
+            display: inline-block;
+        }
+        .glitch-name::before, .glitch-name::after {
+            content: 'sqiirt';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--card-bg);
+        }
+        .glitch-name::before {
+            left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+        .glitch-name::after {
+            left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(11px, 9999px, 81px, 0); }
+            20% { clip: rect(84px, 9999px, 19px, 0); }
+            40% { clip: rect(10px, 9999px, 66px, 0); }
+            60% { clip: rect(48px, 9999px, 21px, 0); }
+            80% { clip: rect(96px, 9999px, 97px, 0); }
+            100% { clip: rect(5px, 9999px, 34px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(62px, 9999px, 10px, 0); }
+            20% { clip: rect(18px, 9999px, 79px, 0); }
+            40% { clip: rect(35px, 9999px, 3px, 0); }
+            60% { clip: rect(28px, 9999px, 51px, 0); }
+            80% { clip: rect(5px, 9999px, 87px, 0); }
+            100% { clip: rect(98px, 9999px, 4px, 0); }
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .avatar {
+            width: 120px; height: 120px; border: 2px solid var(--text);
+            object-fit: cover; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;
+            transition: border-color 0.3s; /* Убрана анимация вращения */
+        }
+        .avatar:hover { border-color: var(--accent); }
+
+        .bio-line { color: var(--dim); font-size: 13px; margin-bottom: 5px; }
+        .stats { margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 15px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .stat-label { color: var(--dim); }
+        
+        .section-title {
+            font-size: 16px; border-bottom: 2px solid var(--accent); 
+            display: inline-block; margin-bottom: 15px; color: #fff;
+        }
+
+        .link-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .link-btn {
+            display: block; padding: 10px; background: #111; color: var(--text);
+            text-decoration: none; border: 1px solid #333; transition: 0.2s; font-size: 14px;
+        }
+        .link-btn:hover { background: #222; border-color: var(--accent); transform: translateX(5px); }
+
+        .donate-box {
+            background: #1a1a1a; padding: 10px; border: 1px solid var(--accent);
+            font-size: 13px; margin-top: 10px; cursor: pointer; position: relative;
+            display: block; text-decoration: none; color: var(--text); transition: 0.2s;
+        }
+        .donate-box:hover { background: #252525; box-shadow: 0 0 10px rgba(255, 51, 51, 0.2); }
+        .donate-box:active { background: #333; transform: scale(0.98); }
+        .donate-label { color: var(--accent); font-weight: bold; margin-bottom: 5px; display: block; }
+        .card-num { font-family: monospace; letter-spacing: 1px; }
+
+        .dni-list { list-style: none; color: var(--dim); font-size: 13px; line-height: 1.6; }
+        .dni-list li::before { content: "✕ "; color: var(--accent); }
+        .dni-warning {
+            color: var(--accent); font-size: 12px; margin-bottom: 10px;
+            border: 1px solid var(--accent); padding: 5px; text-align: center; text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* === АУДИО ПЛЕЕР === */
+        #audio-wrapper {
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #000;
+            border: 1px solid var(--accent);
+            padding: 8px 12px;
+            z-index: 999;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        #music-toggle {
+            color: var(--accent);
+            font-family: var(--font);
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            user-select: none;
+            min-width: 90px;
+            text-align: center;
+        }
+        
+        #music-toggle:hover {
+            text-shadow: 0 0 5px var(--accent);
+        }
+
+        /* Стилизация ползунка */
+        input[type=range] {
+            -webkit-appearance: none; 
+            width: 80px; 
+            background: transparent; 
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 6px;
+            border-radius: 0;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -4px; 
+            box-shadow: 0 0 5px var(--accent);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #333;
+        }
+        
+        /* Для Firefox */
+        input[type=range]::-moz-range-thumb {
+            height: 12px;
+            width: 6px;
+            border: none;
+            border-radius: 0;
+            background: var(--accent);
+            cursor: pointer;
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="scanline"></div>
+
+    <div id="intro-overlay">
+        <div class="intro-box">
+            <div class="intro-title">
+                SELECT LANGUAGE // ВЫБЕРИ ЯЗЫК
+            </div>
+            <div>
+                <button class="lang-btn" onclick="enterSite('ru')">[ RU ]</button>
+                <button class="lang-btn" onclick="enterSite('en')">[ EN ]</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="wrapper" id="main-content">
+        
+        <div class="card">
+            <img src="avatar.jpg" alt="sqiirt" class="avatar">
+            <div class="header">
+                <h1 class="glitch-name">sqiirt</h1>
+                
+                <div class="bio-line" style="color: var(--accent);">
+                    <span class="lang-ru">без доксинга сваттинга и прочей хуеты</span>
+                    <span class="lang-en">no doxing, no swatting & shit</span>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-row">
+                    <span class="stat-label">
+                        <span class="lang-ru">возраст:</span>
+                        <span class="lang-en">age:</span>
+                    </span>
+                    <span>???</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">
+                        <span class="lang-ru">локация:</span>
+                        <span class="lang-en">geo:</span>
+                    </span>
+                    <span>VPN server</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">
+                        <span class="lang-ru">языки:</span>
+                        <span class="lang-en">lang:</span>
+                    </span>
+                    <span>ru / en</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">DNI LIST</div>
+            <div class="dni-warning">
+                <span class="lang-ru">не пиши мне если ты:</span>
+                <span class="lang-en">don't interact if you are:</span>
+            </div>
+            
+            <ul class="dni-list">
+                <li>
+                    <span class="lang-ru">расист / нацик</span>
+                    <span class="lang-en">racist / nazi</span>
+                </li>
+                <li>
+                    <span class="lang-ru">сексист</span>
+                    <span class="lang-en">sexist</span>
+                </li>
+                <li>
+                    <span class="lang-ru">гомофоб</span>
+                    <span class="lang-en">homophobic</span>
+                </li>
+                <li>
+                    <span class="lang-ru">педофил / мап</span>
+                    <span class="lang-en">pedophile / map</span>
+                </li>
+                <li>
+                    <span class="lang-ru">зоофил</span>
+                    <span class="lang-en">zoo</span>
+                </li>
+                <li>
+                    <span class="lang-ru">поддерживаешь войну</span>
+                    <span class="lang-en">support war</span>
+                </li>
+                <li>
+                    <span class="lang-ru">эмоционально зависимые</span>
+                    <span class="lang-en">emotionally dependent</span>
+                </li>
+                <li>
+                    <span class="lang-ru">трансы, небинары (сори вы страшные пиздец)</span>
+                    <span class="lang-en">trans people, enby (sry u all ugly asf)</span>
+                </li>
+                <li>
+                    <span class="lang-ru">просто тупой</span>
+                    <span class="lang-en">just stupid</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <div class="section-title">LINKS</div>
+            <div class="link-list">
+                <a href="https://t.me/cheburnetfunclub" target="_blank" class="link-btn">
+                    <span class="lang-ru">> проекты (@cheburnetfunclub)</span>
+                    <span class="lang-en">> projects (@cheburnetfunclub)</span>
+                </a>
+                <a href="https://t.me/sqiirt" target="_blank" class="link-btn">
+                    <span class="lang-ru">> лс (@sqiirt)</span>
+                    <span class="lang-en">> pm (@sqiirt)</span>
+                </a>
+            </div>
+
+            <div class="section-title">MONEY</div>
+            
+            <div class="donate-box" onclick="navigator.clipboard.writeText('5599002123149108')">
+                <span class="donate-label">
+                    <span class="lang-ru">ЮМАНИ (НАЖМИ ЧТОБЫ СКОПИРОВАТЬ)</span>
+                    <span class="lang-en">YOOMONEY (TAP TO COPY)</span>
+                </span>
+                <span class="card-num">5599 0021 2314 9108</span>
+            </div>
+
+            <a href="https://t.me/send?start=IVVjBLNTuaGe" target="_blank" class="donate-box">
+                <span class="donate-label">
+                    <span class="lang-ru">CRYPTO (TG BOT)</span>
+                    <span class="lang-en">CRYPTO (TG BOT)</span>
+                </span>
+                <span class="card-num">
+                    <span class="lang-ru">ОТПРАВИТЬ $$$</span>
+                    <span class="lang-en">TAP TO SEND $$$</span>
+                </span>
+            </a>
+        </div>
+
+    </div>
+
+    <audio id="bg-audio" loop>
+        <source src="song.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="audio-wrapper">
+        <div id="music-toggle">[ /// STOPPED ]</div>
+        <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.1">
+    </div>
+
+    <script>
+        const audio = document.getElementById('bg-audio');
+        const toggleBtn = document.getElementById('music-toggle');
+        const slider = document.getElementById('vol-slider');
+        const overlay = document.getElementById('intro-overlay');
+        const content = document.getElementById('main-content');
+        let isPlaying = false;
+
+        function enterSite(lang) {
+            document.body.classList.add('show-' + lang);
+
+            // Установка громкости на 0.1 при старте
+            audio.volume = 0.1;
+            slider.value = 0.1;
+
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                content.classList.add('content-visible');
+            }, 800);
+
+            playMusic();
+        }
+
+        function playMusic() {
+            audio.play().then(() => {
+                isPlaying = true;
+                toggleBtn.innerHTML = "[ /// PLAYING ]";
+            }).catch(e => {
+                console.log("Autoplay blocked");
+            });
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            if (!isPlaying) {
+                playMusic();
+            } else {
+                audio.pause();
+                isPlaying = false;
+                toggleBtn.innerHTML = "[ /// STOPPED ]";
+            }
+        });
+
+        // Управление громкостью через ползунок
+        slider.addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+    </script>
+
+</body>
+</html>
