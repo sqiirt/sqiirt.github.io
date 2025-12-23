@@ -1,2 +1,2 @@
-# sqiirt.github.io
-bio
+# my bio
+idk why but yeah
